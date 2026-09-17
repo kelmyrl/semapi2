@@ -8,6 +8,31 @@ import { SignUpUserSteps } from "@/components/tutorial/sign-up-user-steps";
 import { hasEnvVars } from "@/lib/utils";
 import Link from "next/link";
 import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
+
+async function Sales() {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+
+  if (!userData?.user) {
+    return null;
+  }
+
+  const { data: sales } = await supabase.from("sales").select();
+
+  return (
+    <div>
+      <h1>Sales</h1>
+      <ul>
+        {sales?.map((sale) => (
+          <li key={sale.id}>
+            {sale.sales_date}, {sale.degC}, {sale.ice_cream_sales}, {sale.coffee_sales}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -37,6 +62,10 @@ export default function Home() {
             {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
           </main>
         </div>
+
+        <Suspense>
+          <Sales />
+        </Suspense>
 
         <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
           <p>
